@@ -9,13 +9,13 @@ Object::Capsule - wrap any object in a flavorless capsule
 
 =head1 VERSION
 
-version 0.01
+version 0.011
 
-	$Id: Capsule.pm,v 1.4 2004/09/12 01:18:28 rjbs Exp $
+	$Id: /my/cs/projects/capsule/trunk/lib/Object/Capsule.pm 27815 2006-11-11T02:55:13.563463Z rjbs  $
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.011';
 
 =head1 SYNOPSIS
 
@@ -53,6 +53,7 @@ capsule.  It's exported by default and is otherwise non-existent.
 
 sub import {
 	my ($importer) = caller;
+  ## no critic (ProhibitNoStrict)
 	no strict 'refs';
 	*{$importer."\::encapsulate"} = sub {
 		my $object = shift;
@@ -60,12 +61,19 @@ sub import {
 	}
 }
 
-sub AUTOLOAD { 
+sub AUTOLOAD { ## no critic Autoload
 	my $self = shift;
 	my $method = our $AUTOLOAD;
 	$method =~ s/.*:://;
-	die "no such method '$method' in " . __PACKAGE__ unless ref $self;
-	return unless UNIVERSAL::can($$self, $method);
+
+	unless (ref $self) {
+		my($callpack, $callfile, $callline) = caller;
+		die sprintf ## no critic RequireCarping
+			qq{Can\'t locate object method "%s" via package "%s" }.
+		  qq{at %s line %d.\n},
+			$method, $self, $callfile, $callline;
+	}
+	return unless eval { $$self->can($method); };
 	$$self->$method(@_);
 }
 

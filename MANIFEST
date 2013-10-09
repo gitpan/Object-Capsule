@@ -1,14 +1,16 @@
 Changes
-lib/Object/Capsule.pm
 LICENSE
-Makefile.PL
 MANIFEST
+META.json
+META.yml
+Makefile.PL
 README
-t/00-load.t
+dist.ini
+lib/Object/Capsule.pm
+t/00-compile.t
+t/000-report-versions-tiny.t
 t/abuse.t
 t/capsule.t
-t/perl-critic.t
-t/pod-coverage.t
-t/pod.t
 t/simple.t
-META.yml                                 Module meta-data (added by MakeMaker)
+xt/release/changes_has_content.t
+xt/release/pod-syntax.t

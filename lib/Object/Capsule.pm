@@ -1,55 +1,11 @@
-package Object::Capsule;
-
-use warnings;
 use strict;
+use warnings;
+package Object::Capsule;
+{
+  $Object::Capsule::VERSION = '0.012';
+}
+# ABSTRACT: wrap any object in a flavorless capsule (don't use this)
 
-=head1 NAME
-
-Object::Capsule - wrap any object in a flavorless capsule
-
-=head1 VERSION
-
-version 0.011
-
-	$Id: /my/cs/projects/capsule/trunk/lib/Object/Capsule.pm 27815 2006-11-11T02:55:13.563463Z rjbs  $
-
-=cut
-
-our $VERSION = '0.011';
-
-=head1 SYNOPSIS
-
- use Object::Capsule;
- use Widget;
-
- my $widget = new Widget;
-
- my $capsule = encapsulate($widget);
-
- $capsule->some_widget_method; # performs method on widget
-
- print ref $capsule;  # prints "Object::Capsule"
-
- print ref $$capsule; # prints "Widget"
-
-=head1 DESCRIPTION
-
-An Object::Capsule is a thin, permeable membrane that fits nicely around an
-object.  Method calls are passed on to the object, which functions normally
-inside the capsule.  The object can be retrieved by dereferencing the capsule
-as a scalar.
-
-My intent is to use an object capsule subclass to allow the inflation of
-multiple object types from a single column in Class::DBI.
-
-=head1 FUNCTIONS
-
-=head2 C< encapsulate($object) >
-
-This function encases the given object in an Object::Capsule and returns the
-capsule.  It's exported by default and is otherwise non-existent.
-
-=cut
 
 sub import {
 	my ($importer) = caller;
@@ -77,69 +33,7 @@ sub AUTOLOAD { ## no critic Autoload
 	$$self->$method(@_);
 }
 
-=begin future
 
-use overload
-	'${}'    => sub { $_[0] },
-	'""'     => sub { "${$_[0]}" },
-	'0+'     => sub { 0 + ${$_[0]} },
-	'eq'     => sub { ${$_[0]} eq $_[1] },
-	'=='     => sub { ${$_[0]} == $_[1] },
-	nomethod => sub {
-		my $expr = $_[2]
-			? "\$_[1] $_[3] \${\$_[0]}"
-			: "\${\$_[0]} $_[3] \$_[1]";
-		warn "eval: $expr\n";
-		eval $expr;
-	},
-;
-
-=end future
-
-=cut
-
-=begin automatic
-
-my $overload = q!
-	use overload
-		'${}'    => sub { $_[0] },
-		'""'     => sub { "${$_[0]}" },
-		'0+'     => sub { 0 + ${$_[0]} },
-		'atan2'  => sub { $_[2] ? atan2($_[1],${$_[0]}) : atan2(${$_[0]},$_[1]) },
-		#'<>'     => sub { <${$_[0]}> },
-		#'bool'   => sub { ${$_[0]} },
-!;
-
-my $overload_binary = sub { 
-	"'".$_[0]."' => " .
-	q! sub { $_[2]
-		? ($_[1] ! . $_[0] . q! ${$_[0]})
-		: (${$_[0]} ! . $_[0] . q! $_[1]);
-	},
-	!;
-};
-
-my $overload_unary = sub { 
-	"'".$_[0]."' => " .
-	q! sub { ! . $_[0] . q!(${$_[0]}) },
-	!;
-};
-
-$overload .= $overload_binary->($_) for (
-	"+", "+=", "-", "-=", "*", "*=", "/", "/=", "%", "%=", "**", "**=", "<<",
-	"<<=", ">>", ">>=", "x", "x=", ".", ".=", "<", "<=", ">", ">=", "==", "!=",
-	"<=>", "lt", "le", "gt", "ge", "eq", "ne", "cmp", "&", "^", "|");
-
-$overload .= $overload_unary->($_) for (
-	"neg", "!", "~", "cos", "sin", "exp", "abs", "log", "sqrt", "int");
-
-$overload .= ';';
-
-eval $overload;
-
-=end automatic
-
-=cut
 
 # ++ --
 
@@ -200,11 +94,115 @@ use overload
 	'atan2'  => sub { $_[2] ? atan2($_[1],${$_[0]}) : atan2(${$_[0]},$_[1]) },
 	'sqrt'   => sub { sqrt(${$_[0]}) },
 	'<>'     => sub { <${$_[0]}> },
-; 
+;
 
-=head1 AUTHOR
 
-Ricardo Signes, C<< <rjbs@cpan.org> >>
+1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+Object::Capsule - wrap any object in a flavorless capsule (don't use this)
+
+=head1 VERSION
+
+version 0.012
+
+=head1 SYNOPSIS
+
+ use Object::Capsule;
+ use Widget;
+
+ my $widget = new Widget;
+
+ my $capsule = encapsulate($widget);
+
+ $capsule->some_widget_method; # performs method on widget
+
+ print ref $capsule;  # prints "Object::Capsule"
+
+ print ref $$capsule; # prints "Widget"
+
+=head1 DESCRIPTION
+
+B<Achtung!>:  This code is stupid.  I wrote it to abuse Class::DBI.  You
+probably shouldn't use it.
+
+An Object::Capsule is a thin, permeable membrane that fits nicely around an
+object.  Method calls are passed on to the object, which functions normally
+inside the capsule.  The object can be retrieved by dereferencing the capsule
+as a scalar.
+
+My intent is to use an object capsule subclass to allow the inflation of
+multiple object types from a single column in Class::DBI.
+
+=head1 FUNCTIONS
+
+=head2 encapsulate
+
+  $capsule = encapsulate($object);
+
+This function encases the given object in an Object::Capsule and returns the
+capsule.  It's exported by default and is otherwise non-existent.
+
+=for future use overload
+	'${}'    => sub { $_[0] },
+	'""'     => sub { "${$_[0]}" },
+	'0+'     => sub { 0 + ${$_[0]} },
+	'eq'     => sub { ${$_[0]} eq $_[1] },
+	'=='     => sub { ${$_[0]} == $_[1] },
+	nomethod => sub {
+		my $expr = $_[2]
+			? "\$_[1] $_[3] \${\$_[0]}"
+			: "\${\$_[0]} $_[3] \$_[1]";
+		warn "eval: $expr\n";
+		eval $expr;
+	},
+;
+
+=begin automatic
+
+my $overload = q!
+	use overload
+		'${}'    => sub { $_[0] },
+		'""'     => sub { "${$_[0]}" },
+		'0+'     => sub { 0 + ${$_[0]} },
+		'atan2'  => sub { $_[2] ? atan2($_[1],${$_[0]}) : atan2(${$_[0]},$_[1]) },
+		#'<>'     => sub { <${$_[0]}> },
+		#'bool'   => sub { ${$_[0]} },
+!;
+
+my $overload_binary = sub { 
+	"'".$_[0]."' => " .
+	q! sub { $_[2]
+		? ($_[1] ! . $_[0] . q! ${$_[0]})
+		: (${$_[0]} ! . $_[0] . q! $_[1]);
+	},
+	!;
+};
+
+my $overload_unary = sub { 
+	"'".$_[0]."' => " .
+	q! sub { ! . $_[0] . q!(${$_[0]}) },
+	!;
+};
+
+$overload .= $overload_binary->($_) for (
+	"+", "+=", "-", "-=", "*", "*=", "/", "/=", "%", "%=", "**", "**=", "<<",
+	"<<=", ">>", ">>=", "x", "x=", ".", ".=", "<", "<=", ">", ">=", "==", "!=",
+	"<=>", "lt", "le", "gt", "ge", "eq", "ne", "cmp", "&", "^", "|");
+
+$overload .= $overload_unary->($_) for (
+	"neg", "!", "~", "cos", "sin", "exp", "abs", "log", "sqrt", "int");
+
+$overload .= ';';
+
+eval $overload;
+
+=end automatic
 
 =head1 BUGS
 
@@ -218,13 +216,15 @@ be notified of progress on your bug as I make changes.
 The proxy overloading code is hideous.  The "future" version in the code had
 bizarre problems that I couldn't quite solve, but I'll try again sometime.
 
-=head1 COPYRIGHT & LICENSE
+=head1 AUTHOR
 
-Copyright 2004 Ricardo Signes, All Rights Reserved.
+Ricardo SIGNES <rjbs@cpan.org>
 
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2004 by Ricardo SIGNES.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-1;
